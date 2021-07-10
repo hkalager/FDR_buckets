@@ -3,6 +3,7 @@ The codes and files in this repository replicate the results in a manuscript ent
 "Profiling Volatility Forecasting Models with Multiple Hypothesis Testing"
 You can access a free copy of the manuscript through SSRN at:
 https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3737477
+For any enquiries please get in touch via hassannia@outlook.com
 
 Reproduction:
 
