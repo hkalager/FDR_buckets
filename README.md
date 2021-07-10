@@ -7,9 +7,10 @@ https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3737477
 In order to replicate the results you need to run the m files in MATLAB. The steps are identified in file names as "step0_XXX.m", "step1_XXX.m" et cetra. 
 
 Data license:
-The datasets provided under folder "Dataset_ETFS" are from TAQ at WRDS. The provided csv files are sample piece of data. We are not in the capacity to publish the data publicly. You can obtain the data from https://wrds-web.wharton.upenn.edu/wrds/
+The datasets provided under folder "Dataset_ETFS" are samples from TAQ at WRDS with no column headings. The provided csv files are for evaulation purposes only and do not bear any official information. It is at the viewer's discretion to interpret the columns. We are not in the capacity to publish the data publicly. You can obtain the data from https://wrds-web.wharton.upenn.edu/wrds/
 
-Third-party codes: 
+Third-party scripts: 
+
 I) The majority of the codes for the GARCH and SV models are from Kevin Sheppard's MATLAB repository at https://www.kevinsheppard.com/code/matlab/mfe-toolbox/
 All script in folders "distributions", "univariate", "multivariate", "utility", and "timeseries" are from Kevin Sheppard along with the scripts "bsds.m" and "stationary_bootstrap.m"; these codes are provided as is subject to change at all time without previous notice.
 
