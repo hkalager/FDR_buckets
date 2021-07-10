@@ -4,9 +4,12 @@ The codes and files in this repository replicate the results in a manuscript ent
 You can access a free copy of the manuscript through SSRN at:
 https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3737477
 
-In order to replicate the results you need to run the m files in MATLAB. The steps are identified in file names as "step0_XXX.m", "step1_XXX.m" et cetra. 
+Reproduction:
+
+In order to replicate the results you need to run the m files in MATLAB. The steps are identified in file names as "step0_XXX.m", "step1_XXX.m" et cetra. Each file is accompanied by the necessary guidance within the script.
 
 Data license:
+
 The datasets provided under folder "Dataset_ETFS" are samples from TAQ at WRDS with no column headings. The provided csv files are for evaulation purposes only and do not bear any official information. It is at the viewer's discretion to interpret the columns. We are not in the capacity to publish the data publicly. You can obtain the data from https://wrds-web.wharton.upenn.edu/wrds/
 
 Third-party scripts: 
