@@ -9,9 +9,20 @@ Reproduction:
 
 In order to replicate the results you need to run the m files in MATLAB. The steps are identified in file names as "step0_XXX.m", "step1_XXX.m" et cetra. Each file is accompanied by the necessary guidance within the script.
 
-Data license:
+Dataset:
 
 The datasets provided under folder "Dataset_ETFS" are samples from TAQ at WRDS with no column headings. The provided csv files are for evaulation purposes only and do not bear any official information. It is at the viewer's discretion to interpret the columns. We are not in the capacity to publish the data publicly. You can obtain the data from https://wrds-web.wharton.upenn.edu/wrds/
+
+Once you obtain the data from WRDS you need to prepare a csv file named "TICKER_M5_processed.csv" with the columns below:
+- Date: date as in format DD/MM/YYYY
+- Open: opening price recorded for each day as the first trade after 09:00 ET
+- Close: closing price recorded for each day as the first trade after 16:30 ET
+- OC Return: daily range return calculted as log(Close/Open)
+- OC Return Sq: squared daily range return
+- RV Daily: realized volatility proxied by sum of squared 5-min returns.
+- RQ Daily: realized Quarticity as in Bollerslev, Patton, and Quaedvlieg (2016) https://doi.org/10.1016/j.jeconom.2015.10.007
+- FSI Vol: Office of Finacial Research Financial Stress Index for volatility from https://www.financialresearch.gov/financial-stress-index/
+
 
 Third-party scripts: 
 
