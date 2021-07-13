@@ -34,4 +34,4 @@ All contents under the folder "kfwe" is from this source ; these codes are provi
 
 III) Parts of the FDR+/- codes are from the accompanying codes for Bajgrowicz and Scaillet (2012). https://doi.org/10.1016/j.jfineco.2012.06.001
 
-III) The script "est_pi0_disc.m" is a function estimating the tuning parameter lambda for the estimating pi0 as in Liang (2015). https://doi.org/10.1111/biom.12429
+III) The script "est_pi0_disc.m" is a function estimating the tuning parameter lambda for the estimating pi0 as in Liang (2016). https://doi.org/10.1111/biom.12429
