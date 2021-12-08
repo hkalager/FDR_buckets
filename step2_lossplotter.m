@@ -1,7 +1,5 @@
 clear;
 clc;
-%act_fld='/Volumes/My Passport/Empirics4/';
-%act_fld='C:\Users\Hassannia\Documents\MATLAB\Empirics4\';
 tickerlistaaa={'SPY','QQQ','GLD','USO'};
 tickernames=tickerlistaaa;
 %tickernames={'S&P500','NASDAQ','Gold','Light Oil'};
