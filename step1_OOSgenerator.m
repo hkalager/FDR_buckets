@@ -7,8 +7,6 @@
 %% Enviroment setting
 % Basics
 clear;clc;close all;
-%drpadd='C:\Dropbox\Dropbox\Shared_Folder\Chapter4';
-%drpadd='C:\Users\Arman\Dropbox\Shared_Folder\Chapter4';
 drpadd=pwd;
 if ispc()
     addpath([drpadd,'\univariate']);
