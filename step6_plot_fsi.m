@@ -2,11 +2,8 @@ clear;clc;
 drpadd=pwd;
 if ispc()
     addpath([drpadd,'\Dataset_ETFS']);
-    % Report to Dropbox
 else
-    
     addpath([drpadd,'/Dataset_ETFS']);
-    % Report to Dropbox
 end
 
 flname='SPY_M5_processed.csv';
