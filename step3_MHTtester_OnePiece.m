@@ -1,8 +1,6 @@
 % Last revised 21 Jun 2021, 20:03 BST.
 clear;
 clc;
-%act_fld='/Volumes/My Passport/Empirics4/';
-%act_fld='C:\Users\Hassannia\Documents\MATLAB\Empirics4\';
 if ispc
     act_fld=[pwd,'\'];
     addpath([act_fld,'\Dataset_ETFS']);
