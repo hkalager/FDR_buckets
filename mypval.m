@@ -1,5 +1,7 @@
 % Code by Arman Hassanniakalager
-% Simple raw calculation of p-value
+% Calculating the efficient p-values based on Bootstap based on the paper
+% of Romano and Wolf (2016) paper link:
+% http://www.sciencedirect.com/science/article/pii/S0167715216000389
 
 function [pVal] = mypval(Perfs,Perfs_B)
 if size(Perfs_B,2)~=numel(Perfs)
@@ -9,7 +11,7 @@ pVal=zeros(numel(Perfs),1);
 for i=1:numel(Perfs)
     t=Perfs(i);
     tNull=Perfs_B(:,i);
-    pVal(i) = 2*min((length(tNull(tNull > t)))/(length(tNull)),(length(tNull(tNull < t)))/(length(tNull)));
+    pVal(i) = 2*min((length(tNull(tNull > t))+1)/(length(tNull)+1),(length(tNull(tNull < t))+1)/(length(tNull))+1);
 end
 
 
