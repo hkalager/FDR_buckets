@@ -11,11 +11,8 @@ clear;clc;
 drpadd=pwd;
 if ispc()
     addpath([drpadd,'\Dataset_ETFS']);
-    % Report to Dropbox
 else
-    
     addpath([drpadd,'/Dataset_ETFS']);
-    % Report to Dropbox
 end
 tickerlist={'SPY','QQQ','GLD','USO'};
 perf_table=table();
