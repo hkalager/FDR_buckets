@@ -1,4 +1,6 @@
-% Last revised 21 Jun 2021, 20:03 BST.
+% Created revised 21 Jun 2021, 20:03 BST.
+% Last revised 15 Dec 2021.
+
 clear;
 clc;
 if ispc
@@ -34,6 +36,9 @@ gamma_range=.05:.05:.95;
 %% FDR setting
 fdrtarget=0.1;
 rng(0);
+%% Setting for RSW
+gamma_rsw=.1;
+
 %% The benchmark indexes
 bench_ind=zeros(size(Benchmark));
 family_class=Spec_data.Mdl_Class;
@@ -97,26 +102,36 @@ for t=1:numel(main_ticker)
             perf_table{iter,lbl_column_spa}=numel(reject_set);
             
             % RSW test
-            reject_set_rsw1=kfwe(Bench_Perf-Perf,(Perf_B-Perf),1,fdrtarget,20);
+            reject_set_rsw1=kfwe(Bench_Perf-Perf,(Perf_B-Perf),1,fdrtarget,modelscount);
             
             lbl_column_rsw1=['RSW1_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw1}=numel(reject_set_rsw1);
             
             
-            reject_set_rsw5=kfwe(Bench_Perf-Perf,(Perf_B-Perf),5,fdrtarget,20);
+            reject_set_rsw5=kfwe(Bench_Perf-Perf,(Perf_B-Perf),5,fdrtarget,modelscount);
             
             lbl_column_rsw5=['RSW5_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw5}=numel(reject_set_rsw5);
             
-            reject_set_rsw10=kfwe(Bench_Perf-Perf,(Perf_B-Perf),10,fdrtarget,20);
+            reject_set_rsw10=kfwe(Bench_Perf-Perf,(Perf_B-Perf),10,fdrtarget,modelscount);
             
             lbl_column_rsw10=['RSW10_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw10}=numel(reject_set_rsw10);
             
+            k_rsw=1;
+            reject_set_rsw_fdp=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+            while numel(reject_set_rsw_fdp)>=(k_rsw/gamma_rsw-1)
+                k_rsw=k_rsw+1;
+                reject_set_rsw_fdp=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+            end
+            
+            lbl_column_rsw_fdp=['RSW_FDP_',Benchmark{bi}];
+            perf_table{iter,lbl_column_rsw_fdp}=numel(reject_set_rsw_fdp);
+            
             disp(['Number of significant models with SPA and benchmark ',...
                 Benchmark{bi},' is ', num2str(numel(reject_set))]);
-            disp(['Number of significant models with RSW and benchmark ',...
-                Benchmark{bi},' is ', num2str(numel(reject_set_rsw10))]);
+            disp(['Number of significant models with RSW-FDP and benchmark ',...
+                Benchmark{bi},' is ', num2str(numel(lbl_column_rsw_fdp))]);
 
         end
     end

@@ -1,4 +1,6 @@
-% Last revised 21 Jun 2021, 20:03 BST.
+% Created revised 21 Jun 2021, 20:03 BST.
+% Last revised 15 Dec 2021.
+
 clear;
 clc;
 if ispc
@@ -34,6 +36,8 @@ gamma_range=.05:.05:.95;
 %% FDR setting
 fdrtarget=0.1;
 rng(0);
+%% Setting for RSW
+gamma_rsw=.1;
 %% The benchmark indexes
 bench_ind=zeros(size(Benchmark));
 family_class=Spec_data.Mdl_Class;
@@ -103,8 +107,13 @@ for t=1:numel(main_ticker)
             lbl_column_fdr=['FDR_',Benchmark{bi}];
             perf_table{iter,lbl_column_fdr}=sum(PORTFDR);
             
-            % RSW Set
-            reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),5,fdrtarget,20);
+            % RSW-FDP Set            
+            k_rsw=1;
+            reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+            while numel(reject_set_rsw)>=(k_rsw/gamma_rsw-1)
+                k_rsw=k_rsw+1;
+                reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+            end
             
             lbl_column_rsw=['RSW_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw}=numel(reject_set_rsw);
