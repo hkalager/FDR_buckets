@@ -1,4 +1,6 @@
 % Last revised 08 Jul 2021, 09:35 BST.
+% Last revised 17 Dec 2021.
+
 clear;
 clc;
 if ispc
@@ -12,7 +14,7 @@ elseif ismac
 end
 %tickerlistaa={'SPY','QQQ','SHV','LQD','GLD','USO'};
 main_ticker={'SPY','QQQ','GLD','USO'};
-loss_b_range=[-5,-2,-1,0,1];
+loss_b_range=[-5,-2,0,1];
 Benchmark={'GARCH','GJR-GARCH','HAR'};
 cases_list={'One Piece','High Stress','Low Stress'};
 freq=5; %mins
@@ -35,6 +37,8 @@ gamma_range=.05:.05:.95;
 %% FDR setting
 fdrtarget=0.1;
 rng(0);
+%% Setting for RSW
+gamma_rsw=.1;
 %% The benchmark indexes
 bench_ind=zeros(size(Benchmark));
 family_class=Spec_data.Mdl_Class;
@@ -106,12 +110,16 @@ for case_idx=1:numel(cases_list)
             disp(['Number of included models by MCS is ', num2str(numel(INCLUDEDR))]);
             for bi=1:numel(Benchmark)
                 Bench_Perf=Perf(bench_ind(bi));
-                Bench_Ser=poolset_ser(bench_ind(bi));
+                Bench_Ser=poolset_ser(:,bench_ind(bi));
                 [~,maxind]=max(Perf);
                 Bench_Perf_B=Perf_B(:,bench_ind(bi));
                 pvalues=mypval(Bench_Perf-Perf',(Perf_B-Perf));
                 
-                [pi_0hat,lambda]=est_pi0_disc(pvalues, N_bins,Max_lambda);
+                try
+                    [pi_0hat,lambda]=est_pi0_disc(pvalues, N_bins,Max_lambda);
+                catch
+                    pi_0hat=1;
+                end
                 %pi_0hat=max(pi_0hat,.5);
                 opt_gamma=gamma_finder(Bench_Perf-Perf',pvalues,gamma_range,pi_0hat);
                 [pi_aplushat, pi_aminushat] = compute_pi_ahat(pvalues, Bench_Perf-Perf', pi_0hat, opt_gamma);
@@ -145,36 +153,35 @@ for case_idx=1:numel(cases_list)
                 perf_table{iter,lbl_column_fdr_bucket_QLIKE}=bucket_fdr_qlike;
                 
                 
+                % RSW-FDP Test
                 
-                % RSW Test
+                k_rsw=1;
+                reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+                while numel(reject_set_rsw)>=(k_rsw/gamma_rsw-1)
+                    k_rsw=k_rsw+1;
+                    reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+                end
                 
-                reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),5,fdrtarget,20);
-                
-                lbl_column_rsw=['RSW_',Benchmark{bi}];
+                lbl_column_rsw=['KStepM_',Benchmark{bi}];
                 perf_table{iter,lbl_column_rsw}=numel(reject_set_rsw);
                 
-                disp(['Number of significant models with FDR and benchmark ',...
+                disp(['Number of significant models with kStepM and benchmark ',...
                     Benchmark{bi},' is ', num2str(numel(reject_set_rsw))]);
                 
                 if numel(reject_set_rsw)==0
-                    PORTFDR(Benchmark{bi})=1;
                     reject_set_rsw=bench_ind(bi);
                 end
                 
                 bucket_rsw=poolset_ser(:,reject_set_rsw);
                 
-                lbl_column_rsw_bucket_MSE=['RSW_',Benchmark{bi},'_bucket_MSE'];
+                lbl_column_rsw_bucket_MSE=['KStepM_',Benchmark{bi},'_bucket_MSE'];
                 bucket_rsw_mse=mean(abs(robust_loss_fn(bucket_rsw,target,0)),'omitnan');
                 perf_table{iter,lbl_column_rsw_bucket_MSE}=bucket_rsw_mse;
 
-                lbl_column_rsw_bucket_QLIKE=['RSW_',Benchmark{bi},'_bucket_QLIKE'];
+                lbl_column_rsw_bucket_QLIKE=['KStepM_',Benchmark{bi},'_bucket_QLIKE'];
                 bucket_rsw_qlike=mean(abs(robust_loss_fn(bucket_rsw,target,-2)),'omitnan');
                 perf_table{iter,lbl_column_rsw_bucket_QLIKE}=bucket_rsw_qlike;
-                
-                disp(['Number of significant models with RSW and benchmark ',...
-                    Benchmark{bi},' is ', num2str(numel(reject_set_rsw))]);
-                
-                
+
             end
             toc;
         end

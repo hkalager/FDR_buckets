@@ -14,7 +14,7 @@ elseif ismac
 end
 %tickerlistaa={'SPY','QQQ','SHV','LQD','GLD','USO'};
 main_ticker={'SPY','QQQ','GLD','USO'};
-loss_b_range=[-5,-2,-1,0,1];
+loss_b_range=[-5,-2,0,1];
 Benchmark={'GARCH','GJR-GARCH','HAR'};
 freq=5; %mins
 %oos_period_range_end=oos_period_range_test+oos_per-1;
@@ -95,7 +95,11 @@ for t=1:numel(main_ticker)
             Bench_Perf_B=Perf_B(:,bench_ind(bi));
             pvalues=mypval(Bench_Perf-Perf',(Perf_B-Perf));
             
-            [pi_0hat,lambda]=est_pi0_disc(pvalues, N_bins,Max_lambda);
+            try
+                [pi_0hat,lambda]=est_pi0_disc(pvalues, N_bins,Max_lambda);
+            catch
+                pi_0hat=1;
+            end
             %pi_0hat=max(pi_0hat,.5);
             opt_gamma=gamma_finder(Bench_Perf-Perf',pvalues,gamma_range,pi_0hat);
             [pi_aplushat, pi_aminushat] = compute_pi_ahat(pvalues, Bench_Perf-Perf', pi_0hat, opt_gamma);
@@ -107,7 +111,7 @@ for t=1:numel(main_ticker)
             lbl_column_fdr=['FDR_',Benchmark{bi}];
             perf_table{iter,lbl_column_fdr}=sum(PORTFDR);
             
-            % RSW-FDP Set            
+            % kStepM-FDP Set            
             k_rsw=1;
             reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
             while numel(reject_set_rsw)>=(k_rsw/gamma_rsw-1)
@@ -115,11 +119,11 @@ for t=1:numel(main_ticker)
                 reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
             end
             
-            lbl_column_rsw=['RSW_',Benchmark{bi}];
+            lbl_column_rsw=['kStepM_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw}=numel(reject_set_rsw);
 
             % Show what you got!
-            disp(['Number of significant models with RSW and benchmark ',...
+            disp(['Number of significant models with kStepM and benchmark ',...
                 Benchmark{bi},' is ', num2str(numel(reject_set_rsw))]);
             disp(['Number of significant models with FDR and benchmark ',...
                 Benchmark{bi},' is ', num2str(sum(PORTFDR))]);

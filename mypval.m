@@ -11,7 +11,7 @@ pVal=zeros(numel(Perfs),1);
 for i=1:numel(Perfs)
     t=Perfs(i);
     tNull=Perfs_B(:,i);
-    pVal(i) = 2*min((length(tNull(tNull >= t))+1)/(length(tNull)+1),(length(tNull(tNull <= t))+1)/(length(tNull))+1);
+    pVal(i) = 2*min((length(tNull(tNull >= t))+1)/(length(tNull)+1),(length(tNull(tNull <= t))+1)/(length(tNull)+1));
 end
 
 
