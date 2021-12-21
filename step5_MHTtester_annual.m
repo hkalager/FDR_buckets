@@ -1,8 +1,7 @@
 % Last revised 08 Jul 2021, 15:42 BST.
 clear;
 clc;
-%act_fld='/Volumes/My Passport/Empirics4/';
-%act_fld='C:\Users\Hassannia\Documents\MATLAB\Empirics4\';
+
 if ispc
     act_fld=[pwd,'\'];
     addpath([act_fld,'\Dataset_ETFS']);
@@ -36,6 +35,8 @@ gamma_range=.05:.05:.95;
 %% FDR setting
 fdrtarget=0.1;
 rng(0);
+%% Setting for RSW
+gamma_rsw=.1;
 %% The benchmark indexes
 bench_ind=zeros(size(Benchmark));
 family_class=Spec_data.Mdl_Class;
@@ -94,9 +95,13 @@ for t=1:numel(main_ticker)
                 Bench_Perf=Perf(bench_ind(bi));
                 [~,maxind]=max(Perf);
                 Bench_Perf_B=Perf_B(:,bench_ind(bi));
-                pvalues=mypval(Bench_Perf-Perf',(Perf_B-Perf));
-                
-                [pi_0hat,lambda]=est_pi0_disc(pvalues, N_bins,Max_lambda);
+                result_pvals=pValAdj(Bench_Perf-Perf',(Perf_B-Perf));
+                pvalues=result_pvals(:,end);
+                try
+                    [pi_0hat,lambda]=est_pi0_disc(pvalues, N_bins,Max_lambda);
+                catch
+                    pi_0hat=1;
+                end
                 %pi_0hat=max(pi_0hat,.5);
                 opt_gamma=gamma_finder(Bench_Perf-Perf',pvalues,gamma_range,pi_0hat);
                 [pi_aplushat, pi_aminushat] = compute_pi_ahat(pvalues, Bench_Perf-Perf', pi_0hat, opt_gamma);
@@ -109,7 +114,12 @@ for t=1:numel(main_ticker)
                 perf_table{iter,lbl_column_fdr}=sum(PORTFDR);
                 
                 % RSW Set
-                reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),5,fdrtarget,20);
+                k_rsw=1;
+                reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+                while numel(reject_set_rsw)>=(k_rsw/gamma_rsw-1)
+                    k_rsw=k_rsw+1;
+                    reject_set_rsw=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
+                end
             
                 lbl_column_rsw=['RSW_',Benchmark{bi}];
                 perf_table{iter,lbl_column_rsw}=numel(reject_set_rsw);

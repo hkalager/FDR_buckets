@@ -17,7 +17,7 @@ main_ticker={'SPY','QQQ','GLD','USO'};
 loss_b_range=[-5,-2,0,1];
 Benchmark={'GARCH','GJR-GARCH','HAR'};
 cases_list={'One Piece','High Stress','Low Stress'};
-freq=5; %mins
+freq=390; %mins
 %oos_period_range_end=oos_period_range_test+oos_per-1;
 try
     Spec_data=load('RV_Pool_270_Spec_tbl');
@@ -190,5 +190,5 @@ for case_idx=1:numel(cases_list)
     
 end
 fl_lbl=['Quantify_',num2str(oos_period_range_test(1)),...
-        '_',num2str(oos_period_range_test(end)),'.csv'];
+        '_',num2str(oos_period_range_test(end)),'_M',num2str(freq),'.csv'];
 writetable(perf_table,fl_lbl);

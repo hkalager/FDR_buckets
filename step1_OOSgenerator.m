@@ -35,9 +35,9 @@ delete(gcp('nocreate'))
 poolobj=parpool('local',feature('numcores'));
 %% Specification of underlying assets
 % Series
-tickerlist={'SPY','QQQ','GLD','USO'};
+tickerlist={'QQQ'};
 oos_period_range=2014:2020;
-freq=5; %minutes
+freq=390; %minutes
 %% Loops
 for t=1:numel(tickerlist)
     flname=[tickerlist{t},'_M',num2str(freq),'_processed.csv'];

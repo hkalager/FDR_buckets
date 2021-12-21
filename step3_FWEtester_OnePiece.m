@@ -1,5 +1,5 @@
 % Created revised 21 Jun 2021, 20:03 BST.
-% Last revised 15 Dec 2021.
+% Last revised 20 Dec 2021.
 
 clear;
 clc;
@@ -14,9 +14,9 @@ elseif ismac
 end
 %tickerlistaa={'SPY','QQQ','SHV','LQD','GLD','USO'};
 main_ticker={'SPY','QQQ','GLD','USO'};
-loss_b_range=[-5,-2,-1,0,1];
+loss_b_range=[-5,-2,0,1];
 Benchmark={'GARCH','GJR-GARCH','HAR'};
-freq=5; %mins
+freq=65; %mins
 %oos_period_range_end=oos_period_range_test+oos_per-1;
 try
     Spec_data=load('RV_Pool_270_Spec_tbl');
@@ -104,18 +104,18 @@ for t=1:numel(main_ticker)
             % RSW test
             reject_set_rsw1=kfwe(Bench_Perf-Perf,(Perf_B-Perf),1,fdrtarget,modelscount);
             
-            lbl_column_rsw1=['RSW1_',Benchmark{bi}];
+            lbl_column_rsw1=['KStepM1_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw1}=numel(reject_set_rsw1);
             
             
             reject_set_rsw5=kfwe(Bench_Perf-Perf,(Perf_B-Perf),5,fdrtarget,modelscount);
             
-            lbl_column_rsw5=['RSW5_',Benchmark{bi}];
+            lbl_column_rsw5=['KStepM5_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw5}=numel(reject_set_rsw5);
             
             reject_set_rsw10=kfwe(Bench_Perf-Perf,(Perf_B-Perf),10,fdrtarget,modelscount);
             
-            lbl_column_rsw10=['RSW10_',Benchmark{bi}];
+            lbl_column_rsw10=['KStepM10_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw10}=numel(reject_set_rsw10);
             
             k_rsw=1;
@@ -125,13 +125,13 @@ for t=1:numel(main_ticker)
                 reject_set_rsw_fdp=kfwe(Bench_Perf-Perf,(Perf_B-Perf),k_rsw,fdrtarget,modelscount);
             end
             
-            lbl_column_rsw_fdp=['RSW_FDP_',Benchmark{bi}];
+            lbl_column_rsw_fdp=['kStepM_FDP_',Benchmark{bi}];
             perf_table{iter,lbl_column_rsw_fdp}=numel(reject_set_rsw_fdp);
             
             disp(['Number of significant models with SPA and benchmark ',...
                 Benchmark{bi},' is ', num2str(numel(reject_set))]);
-            disp(['Number of significant models with RSW-FDP and benchmark ',...
-                Benchmark{bi},' is ', num2str(numel(lbl_column_rsw_fdp))]);
+            disp(['Number of significant models with kStepM-FDP and benchmark ',...
+                Benchmark{bi},' is ', num2str(numel(reject_set_rsw_fdp))]);
 
         end
     end
@@ -141,5 +141,5 @@ for t=1:numel(main_ticker)
 end
 
 fl_lbl=['AllAssets_',num2str(oos_period_range_test(1)),...
-        '_',num2str(oos_period_range_test(end)),'_OnePiece_FWE.csv'];
+        '_',num2str(oos_period_range_test(end)),'_M',num2str(freq),'_OnePiece_FWE.csv'];
     writetable(perf_table,fl_lbl);
