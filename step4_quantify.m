@@ -17,7 +17,7 @@ main_ticker={'SPY','QQQ','GLD','USO'};
 loss_b_range=[-5,-2,0,1];
 Benchmark={'GARCH','GJR-GARCH','HAR'};
 cases_list={'One Piece','High Stress','Low Stress'};
-freq=390; %mins
+freq=5; %mins
 %oos_period_range_end=oos_period_range_test+oos_per-1;
 try
     Spec_data=load('RV_Pool_270_Spec_tbl');
