@@ -37,7 +37,7 @@ poolobj=parpool('local',feature('numcores'));
 % Series
 tickerlist={'QQQ'};
 oos_period_range=2014:2020;
-freq=390; %minutes
+freq=5; %minutes
 %% Loops
 for t=1:numel(tickerlist)
     flname=[tickerlist{t},'_M',num2str(freq),'_processed.csv'];
