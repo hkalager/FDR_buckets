@@ -15,9 +15,10 @@ catch
     retSqser=tbl1.OCReturnSq;
     RVser=tbl1.RVDaily;
     RQser=tbl1.RQDaily;
+    J_Comp=tbl1.JDaily;
 end
 yser=retser-mean(retser);
-
+dateser=tbl1.Date;
 
 MuCondVar=mean(RVser);
 % Distribution types
@@ -772,8 +773,9 @@ end
 for lambda=.8:0.02:.98
     iter=iter+1;
     ht = riskmetrics(retser,lambda,[]);
+    ht=reshape(ht,[251,1]);
     predicted_ht=(1-lambda)*retser(end)^2 + lambda * ht(end);
-    mdlpool.Prediction{iter}={ht};
+    mdlpool.Prediction{iter}=ht;
     mdlpool.Forecast(iter,step)=predicted_ht;
     mdlpool.Params{iter}='No Parameters';
     mdlpool.ErrDist{iter}='No Dist';
@@ -783,7 +785,7 @@ end
 
 %% HAR (19) -- 7 Models
 % HAR-RV -- 2 models
-dateser=tbl1.Date;
+
 mdlset={'HAR-RV','HAR-log'};
 for mdltype=1:2
     iter=iter+1;
@@ -800,6 +802,19 @@ mdlset={'HAR-Q','HAR-Q-log'};
 for mdltype=1:2
     iter=iter+1;
     [ht,predicted_ht] = my_HARQ(dateser,RVser,RQser,mdltype);
+    mdlpool.Prediction{iter}=ht;
+    mdlpool.Forecast(iter,step)=predicted_ht;
+    mdlpool.Params{iter}='No Parameters';
+    mdlpool.ErrDist{iter}='No Dist';
+    mdlpool.MdlClass{iter}='HAR';
+    mdlpool.Spec{iter}=['Type=',mdlset{mdltype}];
+end
+
+% HAR-CJ -- 3 models
+mdlset={'HAR-CJ','HAR-CJ-sqrt','HAR-CJ-log'};
+for mdltype=1:3
+    iter=iter+1;
+    [ht,predicted_ht] = my_HAR_CJ(dateser,RVser,J_Comp,mdltype);
     mdlpool.Prediction{iter}=ht;
     mdlpool.Forecast(iter,step)=predicted_ht;
     mdlpool.Params{iter}='No Parameters';
@@ -834,13 +849,54 @@ for mdltype=1
     mdlpool.Spec{iter}=['Type=',mdlset{mdltype}];
 end
 
+% HAR-SVR -- 20 models
+mdlset={'HAR-SVR','HAR-SVR-log'};
+
+for kernel=["rbf","linear"]
+    for epsilon_svr=[1e-6,1e-5,1e-4,1e-3,1e-2]
+        for mdltype=1:2
+            iter=iter+1;
+            [ht,predicted_ht] = my_HAR_SVR(dateser,RVser,mdltype,kernel,epsilon_svr);
+            mdlpool.Prediction{iter}=ht;
+            mdlpool.Forecast(iter,step)=predicted_ht;
+            mdlpool.Params{iter}='No Parameters';
+            mdlpool.ErrDist{iter}='No Dist';
+            mdlpool.MdlClass{iter}='SVR';
+            mdlpool.Spec{iter}=['Type=',mdlset{mdltype},';kernel=',kernel,'; epsilon=',num2str(epsilon_svr)];
+        end
+    end
+end
+
+% HAR-ANN -- 30 models
+mdlset={'HAR-ANN','HAR-ANN-log'};
+
+for my_activation=["none","tanh","sigmoid"]
+    for layer_size=[1,5,10,50,100]
+        for mdltype=1:2
+            iter=iter+1;
+            [ht,predicted_ht] = my_HAR_ANN(dateser,RVser,mdltype,layer_size,my_activation);
+            mdlpool.Prediction{iter}=ht;
+            mdlpool.Forecast(iter,step)=predicted_ht;
+            mdlpool.Params{iter}='No Parameters';
+            mdlpool.ErrDist{iter}='No Dist';
+            mdlpool.MdlClass{iter}='ANN';
+            mdlpool.Spec{iter}=['Type=',mdlset{mdltype},';neurons=',num2str(layer_size),'; activation=',my_activation];
+        end
+    end
+end
+
 
 %% SMA (20) -- 5 Models
 
 for num_per=[5,10,22,63,126]
     iter=iter+1;
-    ht=mean(retSqser(end-num_per+1:end));
-    predicted_ht=ht;
+    ht=zeros(numel(dateser),1);
+    for idx=2:numel(dateser)
+        num_per_adj=min(idx,num_per);
+        ht(idx)=mean(retSqser(idx-num_per_adj+1:idx));
+    end
+    
+    predicted_ht=mean(retSqser(end-num_per+1:end));
     mdlpool.Prediction{iter}=ht;
     mdlpool.Forecast(iter,step)=predicted_ht;
     mdlpool.Params{iter}='No Parameters';
@@ -849,48 +905,44 @@ for num_per=[5,10,22,63,126]
     mdlpool.Spec{iter}=['p=',num2str(num_per)];
 end
 
+%% Forecast combination -- 2 Models
+predicted=mdlpool.Forecast';
+IS_ht=zeros(numel(dateser),length(predicted));
+
+for idx=1:numel(predicted)
+    IS_ht(:,idx)=mdlpool.Prediction{1,idx};
+end
+missing_idx=isnan(IS_ht);
+sel_row=(sum(missing_idx,2)==0);
+IS_ht=IS_ht(sel_row,:);
+target_IS=RVser(sel_row);
+
+for theta=[.9,1]
+    iter=iter+1;
+    weight_time=ones(numel(target_IS),1);
+    for idx=1:numel(target_IS)
+        weight_time(idx)=theta^(numel(target_IS)-idx);
+    end
+    mae=abs(IS_ht-target_IS);
+    weighted_mae=weight_time.*mae;
+    inv_w=sum(weighted_mae,1);
+    weights_fc=(1./inv_w)./sum(1./inv_w);
+    predicted_ht=weights_fc*predicted';
+    mdlpool.Prediction{iter}=ht;
+    mdlpool.Forecast(iter,step)=predicted_ht;
+    mdlpool.Params{iter}='No Parameters';
+    mdlpool.ErrDist{iter}='No Dist';
+    mdlpool.MdlClass{iter}='Comb';
+    mdlpool.Spec{iter}=['Theta=',num2str(theta)];
+
+end
+
+
 %% Outputs
+
 predicted=mdlpool.Forecast';
 IS_ht=mdlpool.Prediction';
 Mdl_Class=mdlpool.MdlClass;
 Mdl_Spec=mdlpool.Spec;
 end
 
-%% Unused models
-
-%% HEAVY (15) -- 6 models
-% for viter=1:numel(VolSer)
-%     vol=tbl1{:,4+viter};     
-%     for mnt=1:numel(mntser) % All mean process
-%         yser=yserchoices(:,mnt)./vol.^.5;
-%         for q=1 % W/WO MA term (beta)
-%             for p=1 % W/WO AR term (phi)
-%                 iter=iter+1;
-%                 opts  =  optimset(opts , 'MaxFunEvals' , 200*(2+p+q));
-%                 [parameters, ~, ht] = heavy(yser,p,q,[],[],[]);
-%                 
-%                 [K1,T1] = size(yser');                
-%                 [O1,A1,B1] = heavy_parameter_transform(parameters,p,q,K1);
-%                 predicted_ht= O1;
-%                 for j=1:p
-%                         predicted_ht = predicted_ht + A1*yser(end+1-j);
-%                 end
-%                 for j=1:q
-%                         predicted_jht = predicted_ht + B1*ht(end+1-j);
-%                 end
-%                 
-%                 %mdlGARCH = garch('Distribution',struct('Name','t','DoF',DoFF(dist)),'GARCHLags',1:p,'ARCHLags',1:q);
-%                 %EstMdlGARCH = estimate(mdlGARCH,yser,'options',opts);
-%                 %predicted=forecast(EstMdlGARCH,5,'Y0',yser)';
-%                 mdlpool.Prediction{iter}=ht;                 
-%                 mdlpool.Forecast(iter,step)=predicted_ht;
-%                 mdlpool.Params{iter}={parameters};
-%                 mdlpool.ErrDist{iter}='No Dist';
-%                 mdlpool.MeanType{iter}=mntser(mnt);
-%                 mdlpool.VolType{iter}=VolSer(viter);
-%                 mdlpool.MdlClass{iter}='HEAVY';
-%                 mdlpool.Spec{iter}=['q=',num2str(q),',p=',num2str(p)];
-%             end
-%         end   
-%     end
-% end

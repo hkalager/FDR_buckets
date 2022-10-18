@@ -35,7 +35,7 @@ delete(gcp('nocreate'))
 poolobj=parpool('local',feature('numcores'));
 %% Specification of underlying assets
 % Series
-tickerlist={'QQQ'};
+tickerlist={'SPY','QQQ','GLD','USO'};
 oos_period_range=2014:2020;
 freq=5; %minutes
 %% Loops
@@ -47,14 +47,14 @@ for t=1:numel(tickerlist)
     TF2SMP = find(year(tbl0.Date)==oos_period_range(end),1,'last');
     PeriodsPerAnnum=floor((TF2SMP+1-TF1SMP)/numel(oos_period_range));
     num_per=TF2SMP-TF1SMP;
-    oos_ser=nan(num_per+1,270);
+    oos_ser=nan(num_per+1,325);
     parfor s=0:num_per
         tic;
         disp(['Iteration ', num2str(s+1),' ...']);
         startIS=TF1SMP+s-PeriodsPerAnnum;
         finishIS=TF1SMP+s-1;
         tbl1=tbl0(startIS:finishIS,:);
-        [predicted,~]=volpool(tbl1);
+        [predicted,IS_ht]=volpool(tbl1);
         %[predicted,IS_ht]=garchpool(tbl1);
         oos_ser(s+1,:)=predicted;
         %recorded_results{s+1,1}=IS_ht;
