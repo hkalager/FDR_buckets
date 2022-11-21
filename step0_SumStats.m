@@ -1,11 +1,13 @@
 %% Warning: this code clears the workspace and the command window
 % codes developed for the manuscript titled 
 % "A False Discovery Rate Approach to Optimal Volatility Forecasting Model Selection"
-% codes by Arman Hassanniakalager
 % This script generates the summary statistics as presented in Table 2 of
 % the manuscript.
 % The summary stats are stored in the table variable named "perf_table" and
 % written to file named "SummaryStats.xlsx"
+% Script last revised 30 Oct 2022
+% @author: Arman Hassanniakalager GitHub: https://github.com/hkalager
+% Common disclaimers apply. Subject to change at all time.
 
 clear;clc;
 drpadd=pwd;

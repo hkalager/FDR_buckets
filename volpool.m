@@ -1,9 +1,11 @@
 % The volatility models pool generator based on the following papers:
 % Hansen & Lunde (2005), Baillie et al (1996), Corsi (2009), Chan & Grant
-% (2016), and Bollerslev, Patton, and Quaedvlieg (2016) 
-% Script developed by Arman Hassanniakalager 
+% (2016), and Bollerslev, Patton, and Quaedvlieg (2016), Andersen, 
+% Bollerslev, and Diebold (2007), and Rapach, Strauss, and Zhou (2010)
 % Created on 16 Jan. 2018
-% Last modified 15 Dec. 2021
+% Script last revised 2 Nov 2022
+% @author: Arman Hassanniakalager GitHub: https://github.com/hkalager
+% Common disclaimers apply. Subject to change at all time.
 function [predicted,IS_ht,Mdl_Class,Mdl_Spec]=volpool(tbl1)
 %% Add necessary paths
 warning('off')
@@ -773,7 +775,7 @@ end
 for lambda=.8:0.02:.98
     iter=iter+1;
     ht = riskmetrics(retser,lambda,[]);
-    ht=reshape(ht,[251,1]);
+    ht=reshape(ht,[numel(dateser),1]);
     predicted_ht=(1-lambda)*retser(end)^2 + lambda * ht(end);
     mdlpool.Prediction{iter}=ht;
     mdlpool.Forecast(iter,step)=predicted_ht;
@@ -783,7 +785,7 @@ for lambda=.8:0.02:.98
     mdlpool.Spec{iter}=['lambda=',num2str(lambda)];
 end
 
-%% HAR (19) -- 7 Models
+%% HAR (19) -- 10 Models
 % HAR-RV -- 2 models
 
 mdlset={'HAR-RV','HAR-log'};
@@ -848,7 +850,7 @@ for mdltype=1
     mdlpool.MdlClass{iter}='HAR';
     mdlpool.Spec{iter}=['Type=',mdlset{mdltype}];
 end
-
+%% SVR (20) -- 20 Models
 % HAR-SVR -- 20 models
 mdlset={'HAR-SVR','HAR-SVR-log'};
 
@@ -866,6 +868,7 @@ for kernel=["rbf","linear"]
         end
     end
 end
+%% ANN (21) -- 30 Models
 
 % HAR-ANN -- 30 models
 mdlset={'HAR-ANN','HAR-ANN-log'};
@@ -886,7 +889,7 @@ for my_activation=["none","tanh","sigmoid"]
 end
 
 
-%% SMA (20) -- 5 Models
+%% SMA (22) -- 5 Models
 
 for num_per=[5,10,22,63,126]
     iter=iter+1;
@@ -896,7 +899,7 @@ for num_per=[5,10,22,63,126]
         ht(idx)=mean(retSqser(idx-num_per_adj+1:idx));
     end
     
-    predicted_ht=mean(retSqser(end-num_per+1:end));
+    predicted_ht=mean(retSqser(max(end-num_per+1,1):end));
     mdlpool.Prediction{iter}=ht;
     mdlpool.Forecast(iter,step)=predicted_ht;
     mdlpool.Params{iter}='No Parameters';
@@ -905,7 +908,7 @@ for num_per=[5,10,22,63,126]
     mdlpool.Spec{iter}=['p=',num2str(num_per)];
 end
 
-%% Forecast combination -- 2 Models
+%% FC (23) Forecast combination -- 2 Models
 predicted=mdlpool.Forecast';
 IS_ht=zeros(numel(dateser),length(predicted));
 
@@ -936,7 +939,6 @@ for theta=[.9,1]
     mdlpool.Spec{iter}=['Theta=',num2str(theta)];
 
 end
-
 
 %% Outputs
 
